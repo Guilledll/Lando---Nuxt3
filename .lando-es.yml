@@ -1,0 +1,62 @@
+# Nombre interno de nuestra aplicación
+name: nuxt3-demo
+
+# Servicios personalizados para nuestra app
+# Docs: https://docs.lando.dev/config/services.html
+services:
+  appserver:
+    # Servidor Node.js requerido por Nuxt
+    # Docs: https://docs.lando.dev/config/node.html
+    type: node:16
+
+    # Iniciar servidor yarn con puerto y host para habilitar
+    # compatibilidad con el sistema de host y puertos de lando
+    command: yarn dev --hostname 0.0.0.0 --port 80
+
+    # Comando único para "lando rebuild" y el primer "lando start"
+    install_dependencies_as_me:
+      - yarn install
+
+    # Esta override expone el puerto 24678 utilzando por el HMR de Vite
+    # Al hacer esto habilitamos el uso de HMR bajo demanda
+    overrides:
+      ports:
+        - "24678:24678"
+
+# Herramientas utilzadas dentro del contenedor
+# Docs: https://docs.lando.dev/config/tooling.html
+tooling:
+  # Permite lanzar nuxt e instalar dependencias
+  yarn:
+    service: appserver
+  # Permite utilizar comandos npm dentro del contenedor
+  npm:
+    service: appserver
+  # Permite utilizar comandos npx dentro del contenedor
+  npx:
+    service: appserver
+  # Permite utilizar comandos node dentro del contenedor
+  node:
+    service: appserver
+  # Permite utilizar comandos nuxt dentro del contenedor
+  # Estos comandos los utiliza yarn (ej: yarn dev)
+  nuxt:
+    cmd: /app/node_modules/.bin/nuxt
+    service: appserver
+
+# Lanza este evento con cada "lando start"
+# Docs: https://docs.lando.dev/config/events.html#discovering-events
+events:
+  pre-start:
+    - yarn install
+
+# Define un dominio (url) personalizado
+# Docs: https://docs.lando.dev/config/proxy.html#proxy
+proxy:
+  appserver:
+    - nuxtapp.lndo.site
+
+# Excluye las carpetas para mejorar el rendimiento de docker
+# Docs: https://docs.lando.dev/config/performance.html
+exclude:
+  - node_modules
